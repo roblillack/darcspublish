@@ -26,8 +26,9 @@ PROJECT=`pwd | xargs basename`
 
 darcs put $TMPDIR/darcscopy
 
-# hmm
-#cp _darcs/prefs/author $TMPDIR/darcscopy/_darcs/prefs
+if [ -r _darcs/prefs/email ]; then
+  cp _darcs/prefs/email $TMPDIR/darcscopy/_darcs/prefs
+fi
 
 touch $TMPDIR/rc
 chmod 0600 $TMPDIR/rc
