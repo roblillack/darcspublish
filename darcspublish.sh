@@ -5,9 +5,9 @@ if [ ! -d _darcs ]; then
   exit 1
 fi
 
-unset SERVER USER DIR BASEDIR PASSWORD
+unset SERVER USER DIR BASEDIR PASSWORD PRISTINE
 
-for config in _darcs/prefs/ftpdata $HOME/.darcspublish; do
+for config in $HOME/.darcspublish _darcs/prefs/ftpdata; do
   if [ -r $config ]; then
     . $config
   fi
@@ -20,15 +20,14 @@ if [ "x$SERVER" = "x" -o "x$USER" = "x" -o\
 fi  
 
 TMPDIR=`mktemp -d -t publish` || exit 1
+if [ "x$PRISTINE" = "x" ]; then
+  darcs put $TMPDIR/darcscopy
+  if [ -r _darcs/prefs/email ]; then
+    cp _darcs/prefs/email $TMPDIR/darcscopy/_darcs/prefs
+  fi
+fi
 PROJECT=`pwd | xargs basename`
 
-#echo $PROJECT
-
-darcs put $TMPDIR/darcscopy
-
-if [ -r _darcs/prefs/email ]; then
-  cp _darcs/prefs/email $TMPDIR/darcscopy/_darcs/prefs
-fi
 
 touch $TMPDIR/rc
 chmod 0600 $TMPDIR/rc
@@ -43,7 +42,11 @@ if [ "x$DIR" != "x" ]; then
 else
   echo "  remote $BASEDIR/$PROJECT" >> $TMPDIR/rc
 fi
-echo "  local $TMPDIR/darcscopy" >> $TMPDIR/rc
+if [ "x$PRISTINE" = "x" ]; then
+  echo "  local $TMPDIR/darcscopy" >> $TMPDIR/rc
+else
+  echo "  local `pwd`/_darcs/pristine" >> $TMPDIR/rc
+fi
 echo "  protocol ftp" >> $TMPDIR/rc
 echo "  state checksum" >> $TMPDIR/rc
 echo "  permissions all" >> $TMPDIR/rc
