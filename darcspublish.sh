@@ -19,7 +19,7 @@ if [ "x$SERVER" = "x" -o "x$USER" = "x" -o\
   exit 1
 fi  
 
-TMPDIR=`mktemp -d -t publish` || exit 1
+TMPDIR=`mktemp -d -t publish.XXXXXXXX` || exit 1
 if [ "x$PRISTINE" = "x" ]; then
   darcs put $TMPDIR/darcscopy
   if [ -r _darcs/prefs/email ]; then
