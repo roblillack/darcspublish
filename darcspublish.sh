@@ -5,7 +5,7 @@ if [ ! -d _darcs ]; then
   exit 1
 fi
 
-unset SERVER USER DIR BASEDIR PASSWORD PRISTINE
+unset SERVER USER DIR BASEDIR PASSWORD PRISTINE EXCLUDE
 
 for config in $HOME/.darcspublish _darcs/prefs/ftpdata; do
   if [ -r $config ]; then
@@ -51,6 +51,11 @@ echo "  protocol ftp" >> $TMPDIR/rc
 echo "  state checksum" >> $TMPDIR/rc
 echo "  permissions all" >> $TMPDIR/rc
 echo "  symlinks ignore" >> $TMPDIR/rc
+if [ "x$EXCLUDE" != "x" ]; then
+  for i in $EXCLUDE; do
+    echo "  exclude $i" >> $TMPDIR/rc
+  done
+fi
 
 if [ ! -r _darcs/sitecopystate/darcspublish ]; then
   echo "*** publishing from here for the first time...."
