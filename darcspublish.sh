@@ -80,9 +80,15 @@ if [ "x$PRISTINE" = "x" ]; then
     PRISARG=""
   fi
   echo -n "*** Creating clean working copy: "
+  if [ -r _darcs/prefs/defaultrepo ]; then
+    cp _darcs/prefs/defaultrepo $TMPDIR/defaultrepo
+  fi
   darcs put $PRISARG $TMPDIR/darcscopy >/dev/null && echo "ok." || exit 1
   if [ -r _darcs/prefs/email ]; then
     cp _darcs/prefs/email $TMPDIR/darcscopy/_darcs/prefs
+  fi
+  if [ -r $TMPDIR/defaultrepo ]; then
+    cp $TMPDIR/defaultrepo _darcs/prefs/defaultrepo
   fi
 fi
 
