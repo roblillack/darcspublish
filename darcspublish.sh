@@ -65,6 +65,7 @@ if [ "x$SERVER" = "x" -o "x$USER" = "x" -o\
   exit 1
 fi
 
+PROJECT=`pwd | xargs basename`
 if [ "x$DIR" != "x" ]; then
   REMOTEDIR="$DIR"
 else
@@ -84,7 +85,6 @@ if [ "x$PRISTINE" = "x" ]; then
     cp _darcs/prefs/email $TMPDIR/darcscopy/_darcs/prefs
   fi
 fi
-PROJECT=`pwd | xargs basename`
 
 
 touch $TMPDIR/rc
