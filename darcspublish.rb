@@ -38,7 +38,7 @@ def loadProfile(profile = nil)
     if File.exists? ENV['HOME'] + '/.netrc' and
        handle = File.new(ENV['HOME'] + '/.netrc', 'r') then
       handle.each do |l|
-        tokens = l.split(/ +/, 6)
+        tokens = l.split(/\s+/, 6)
         if tokens[1] == config['SERVER'] then
           config['USER'] = tokens[3]
           config['PASSWORD'] = tokens[5]
@@ -48,7 +48,7 @@ def loadProfile(profile = nil)
   end
 
   if !config.has_key? 'SERVER' or
-     !config.has_key? 'USER' or
+     !config.has_key? 'USER' or !config.has_key? 'PASSWORD' or
      (!config.has_key? 'BASEDIR' and !config.has_key? 'DIR') then
     $stderr.puts "*** Configuration incomplete."
     exit 1
@@ -94,8 +94,10 @@ def main
       FileUtils.cp "#{$tempDir}/defaultrepo", "_darcs/prefs/"
     end
 
-    # if we're simulating PRISTINE, we ned to EXCLUDE _darcs
+    # if we're simulating PRISTINE, we need to EXCLUDE _darcs
     cfg['EXCLUDE'] = '_darcs ' + (cfg.has_key?('EXCLUDE') ? cfg['EXCLUDE'] : '')
+    # if someone asks, say NO, as we're only simulating it :)
+    cfg.delete 'PRISTINE'
   end
 
   FileUtils.touch $tempDir + '/rc'
