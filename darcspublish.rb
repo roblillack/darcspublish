@@ -3,20 +3,6 @@
 require 'net/ftp'
 require 'fileutils'
 
-def downloadBla
-  Net::FTP.open('ftp.burningsoda.com', 'ftp24104', 'casui') do |ftp|
-    puts "open"
-    #ftp.login
-    puts "logged in"
-    if (ftp.size('www.lillaxsitedesign.de/darcs/darcspublish/.darcspublishstate') > 1)
-      ftp.gettextfile('/www.lillaxsitedesign.de/darcs/darcspublish/.darcspublishstate', 'bla')
-    end
-  end
-rescue
-  $stderr.puts("No connection possible: " + $!)
-  exit 1
-end
-
 def assureDarcsRepo
   if !File.directory? '_darcs' then
     $stderr.puts "*** This Directory is not a darcs repository!"
