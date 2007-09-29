@@ -28,7 +28,7 @@ def loadProfile(profile = nil)
         config.delete key
         next
       end
-      config[key] = value.strip
+      config[key] = value.strip.sub(/^"(.*)"$/, '\1')
     end
   end
   puts 
