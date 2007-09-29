@@ -77,7 +77,8 @@ def main
 
   $tempDir = createTempDir
 
-  if !cfg.has_key? 'PRISTINE' then
+  if !cfg.has_key? 'PRISTINE' or 
+     (cfg.has_key? 'PRISTINE' and !File.directory? '_darcs/pristine') then
     print "*** Creating clean working copy: "
     if File.readable? '_darcs/prefs/defaultrepo' then
       FileUtils.cp '_darcs/prefs/defaultrepo', "#{$tempDir}/defaultrepo"
@@ -92,6 +93,9 @@ def main
     if File.readable? "#{$tempDir}/defaultrepo" then
       FileUtils.cp "#{$tempDir}/defaultrepo", "_darcs/prefs/"
     end
+
+    # if we're simulating PRISTINE, we ned to EXCLUDE _darcs
+    cfg['EXCLUDE'] = '_darcs ' + (cfg.has_key?('EXCLUDE') ? cfg['EXCLUDE'] : '')
   end
 
   FileUtils.touch $tempDir + '/rc'
