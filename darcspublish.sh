@@ -123,15 +123,17 @@ fi
 chmod 0700 _darcs/sitecopystate
 
 if [ "x$UPLOADSTATE" != "x" ]; then
-  TMPSTATE=`mktemp` || exit 1
+  #TMPSTATE=`mktemp -t darcspublishtempstate.XXXXXX` || exit 1
   echo -n "*** Looking for state file: "
-  if `echo get $REMOTEDIR/.darcspublishstate $TMPSTATE | ftp -p $SERVER 2>&1 > /dev/null`; then
-    mv $TMPSTATE _darcs/sitecopystate/darcspublish
+  #if `echo get $REMOTEDIR/.darcspublishstate $TMPSTATE | ftp -p $SERVER 2>&1 > /dev/null`; then
+  if `echo get $REMOTEDIR/.darcspublishstate _darcs/sitecopystate/darcspublish | ftp -p $SERVER 22>&1 22> /dev/null`; then
+    #mv $TMPSTATE _darcs/sitecopystate/darcspublish
     echo "found."
   else
+    rm -f _darcs/sitecopystate/darcspublish
     echo "not found."
   fi
-  rm -f $TMPSTATE
+  #rm -f $TMPSTATE
 fi
 
 if [ ! -r _darcs/sitecopystate/darcspublish ]; then
