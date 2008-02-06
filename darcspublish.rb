@@ -98,9 +98,6 @@ def main
     cfg['REMOTEDIR'] = cfg['DIR']
   else
     cfg['REMOTEDIR'] = cfg['BASEDIR'] + '/' + cfg['PROJECT']
-    if cfg['TYPE'] == 'git' and cfg['UPLOAD'] == 'REPO' then
-      cfg['REMOTEDIR'] += '.git'
-    end
   end
 
   $tempDir = createTempDir
