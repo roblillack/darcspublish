@@ -210,9 +210,7 @@ def main
         ftp.mkdir "#{cfg['REMOTEDIR']}"
         puts "ok"
       rescue
-        puts "error"
-        $stderr.puts "Error creating remote directory."
-        exit 1
+        puts "error. exists? whatever..."
       end
     end
   else
