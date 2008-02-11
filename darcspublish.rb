@@ -4,6 +4,8 @@ require 'net/ftp'
 require 'fileutils'
 
 def checkRepoType
+  return ARGV[1] if ARGV[0] == '-t'
+
   if File.directory? '_darcs' then
     return 'darcs'
   elsif File.directory? '.git' then
@@ -14,7 +16,10 @@ def checkRepoType
 end
 
 def loadProfile(profile = nil)
+  print "*** Checking repository type: "
   type = checkRepoType
+  puts type
+
   case type
   when 'darcs'
     configfile = '_darcs/prefs/darcspublish'
@@ -72,7 +77,7 @@ def loadProfile(profile = nil)
 
   if !config.has_key? 'SERVER' or
      !config.has_key? 'USER' or !config.has_key? 'PASSWORD' then
-    $stderr.puts "*** Configuration incomplete."
+    $stderr.puts "Configuration incomplete."
     exit 1
   end
 
@@ -103,6 +108,7 @@ def main
   $tempDir = createTempDir
   
   print "*** Creating clean working copy: "
+  $stdout.flush
   
   case cfg['TYPE']
   when 'darcs'
