@@ -125,8 +125,8 @@ def main
     end
   when 'git'
     bare = cfg['UPLOAD'] == 'REPO' ? ' --bare' : '';
-    exit 1 unless system "git clone#{$bare} . #{$tempDir}/repocopy >/dev/null"
-    exit 1 unless system "cd #{$tempDir}/repocopy && rm -rf .git/logs .git/index && git update-server-info >/dev/null && cd #{Dir.pwd}"
+    exit 1 unless system "git clone#{bare} . #{$tempDir}/repocopy >/dev/null"
+    exit 1 unless system "cd #{$tempDir}/repocopy && rm -rf .git/logs .git/index && git update-server-info#{bare} >/dev/null && cd #{Dir.pwd}"
     cfg['SOURCEDIR'] = $tempDir + '/repocopy'
     if cfg['UPLOAD'] == 'CONTENT' then
       cfg['EXCLUDE'] += ' .git'
