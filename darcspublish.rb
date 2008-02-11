@@ -1,7 +1,43 @@
 #!/usr/bin/env ruby
 
-require 'net/ftp'
+#
+# = darcspublish.rb — Easily Publish Software and Websites
+#
+# Author:: Robert Lillack <rob@burningsoda.com>
+# Documentation:: http://burningsoda.com/software/darcspublish/
+# Copyright:: Copyright (c) 2007—2008 Robert Lillack, burningsoda.com
+# License:: 2-clause BSD
+#
+
+require 'erb'
 require 'fileutils'
+require 'net/ftp'
+require 'time'
+
+class TemplateInformation
+	def initialize(filename = "",
+	               changed = Time.now,
+	               published = Time.now)
+		@filename = filename
+		@changed = changed
+		@published = published
+	end
+	
+	def get_binding
+		return binding
+	end
+end
+
+def find_mtime(type, directory, filename)
+	case type
+	when 'plain'
+		return File.stat(File.join(directory, filename)).mtime
+	when 'darcs'
+		return Time.parse(`darcs changes --repodir "#{directory}" "#{filename[1..-1]}"`.split("\n")[2])
+	else
+		raise "find_mtime not supported for repo type #{type}"
+	end
+end
 
 def checkRepoType
   return ARGV[1] if ARGV[0] == '-t'
@@ -137,7 +173,7 @@ def main
     cfg['SOURCEDIR'] = Dir.pwd
     cfg['EXCLUDE'] += ' ' + File.basename(cfg['CONFIGFILE']) + ' ' + File.basename(cfg['STATEFILE'])
   end
-
+  
   #if !cfg.has_key? 'PRISTINE' or 
   #   (cfg.has_key? 'PRISTINE' and !File.directory? '_darcs/pristine') then
     
@@ -150,6 +186,75 @@ def main
 
  #   exit 1 unless system 'darcs put ' + (cfg['EXCLUDEPRISTINE'].empty? ? '' : '--no-pristine-tree ') + $tempDir + '/darcscopy >/dev/null'
     puts "ok"
+
+  if cfg.has_key? 'TEMPLATES' and
+     (cfg['UPLOAD'] == 'CONTENT' or cfg['UPLOAD'] == 'BOTH') then
+    puts "*** Excludes: #{cfg['EXCLUDE']}"
+    print "*** Processing templates (#{cfg['TEMPLATES']}): "
+    $stdout.flush
+    
+    publishTime = Time.now
+    Dir.mkdir($tempDir + '/repoclone')
+    Dir.glob(cfg['SOURCEDIR']+'/**/*', File::FNM_DOTMATCH) do |f|
+      next if File.basename(f) == '.' or File.basename(f) == '..'
+      name = f.slice(cfg['SOURCEDIR'].length, f.length - cfg['SOURCEDIR'].length)
+      
+	  excluded = false
+	  cfg['EXCLUDE'].strip.split(/\s+/).each do |i|
+	  	next unless (i[0,1] == '/' and File.fnmatch?(i, name)) or
+	  	            File.fnmatch?(i, File.basename(name))
+	  	excluded = true
+	  	break
+	  end unless !cfg.has_key? 'EXCLUDE'
+      next if excluded
+
+      if File.directory? f then
+        FileUtils.mkdir($tempDir + '/repoclone' + name, :mode => File.lstat(f).mode)
+      else
+        if File.symlink? f then
+          File.symlink(File.readlink(f), $tempDir + '/repoclone' + name)
+	      File.lchmod(File.lstat(f).mode, $tempDir + '/repoclone' + name)
+        else
+          begin
+    		File.link(f, $tempDir + '/repoclone' + name)
+  	      rescue
+  		    FileUtils.cp(f, $tempDir + '/repoclone' + name)
+	        File.chmod(File.stat(f).mode, $tempDir + '/repoclone' + name)
+  		  end
+  		end
+  		
+	    matches = false
+	    cfg['TEMPLATES'].strip.split(/\s+/).each do |i|
+	    	next unless (i[0,1] == '/' and File.fnmatch?(i, name)) or
+	    	            File.fnmatch?(i, File.basename(name))
+	    	matches = true
+	    	break
+	    end
+        next if not matches
+
+		# do replacement in file $tempDir+'/repoclone' + name
+		context = TemplateInformation.new(name,
+		                                  find_mtime(cfg['TYPE'], Dir.pwd, name),
+		                                  publishTime)
+		template = File.read($tempDir + '/repoclone' + name)
+		output = ERB.new(template).result(context.get_binding)
+		
+		# don't use the original file, as it may be hardlinked!
+		File.unlink($tempDir+'/repoclone'+name)
+		
+		File.open($tempDir+'/repoclone'+name,
+		          File::WRONLY|File::CREAT|File::TRUNC, File.stat(f).mode) do |o|
+			o.write(output)
+		end
+		print "."
+		$stdout.flush
+      end
+    end
+    puts " ok"
+    cfg['SOURCEDIR'] = $tempDir+'/repoclone'
+   end
+   #exit 1
+
 
   #  if File.readable? '_darcs/prefs/email' then
   #    FileUtils.cp "_darcs/prefs/email", "#{$tempDir}/darcscopy/_darcs/prefs"
@@ -229,6 +334,8 @@ def main
     print "*** PRESS CTRL-C TO CANCEL OR RETURN TO CONTINUE!"
     $stdin.getc
   end
+  
+  # do the actual update
   exit 1 unless system "sitecopy -r #{$tempDir}/rc -p #{$tempDir}/state -u darcspublish"
 
   if cfg.has_key? 'UPLOADSTATE' then
@@ -246,6 +353,7 @@ def main
   end
   
   FileUtils.cp $tempDir + '/state/darcspublish', cfg['STATEFILE']
+  
   #puts "*** CONFIGURATION USED ***"
   #cfg.each_pair do |k, v|
   #  puts "#{k}: #{v}"
