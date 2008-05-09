@@ -42,6 +42,11 @@ end
 def checkRepoType
   return ARGV[1] if ARGV[0] == '-t'
 
+  # we allow real repositories to act like plain ones
+  if File.readable? '_darcspublish' then
+    return 'plain'
+  end
+
   if File.directory? '_darcs' then
     return 'darcs'
   elsif File.directory? '.git' then
