@@ -156,12 +156,13 @@ def main
     if cfg['UPLOAD'] == 'CONTENT' and File.directory? '_darcs/pristine' then
       cfg['SOURCEDIR'] = Dir.pwd + '/_darcs/pristine'
     else
-      exit 1 unless system "darcs put --no-pristine-tree #{$tempDir}/repocopy >/dev/null"
+      exit 1 unless system "darcs put #{$tempDir}/repocopy >/dev/null"
       cfg['SOURCEDIR'] = $tempDir + '/repocopy'
       if cfg['UPLOAD'] == 'CONTENT' then
         cfg['EXCLUDE'] += ' _darcs'
-      elsif cfg['UPLOAD'] == 'REPO' then
+      else
         cfg['SOURCEDIR'] == $tempDir + '/repocopy/_darcs'
+		cfg['EXCLUDE'] += ' _darcs/pristine' if cfg['UPLOAD'] == 'REPO' 
       end
     end
   when 'git'
