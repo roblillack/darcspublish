@@ -316,10 +316,6 @@ def main
 
   if !File.exists? $tempDir + '/state/darcspublish' then
     puts "*** Publishing from here for the first time."
-    print "*** Setting up initial state: "
-    exit 1 unless system "sitecopy -r #{$tempDir}/rc -p #{$tempDir}/state -i darcspublish"
-    exit 1 unless system "sitecopy -r #{$tempDir}/rc -p #{$tempDir}/state -f darcspublish"
-    puts "ok"
     print "*** Creating directory on remote server: "
     Net::FTP.open(cfg['SERVER'], cfg['USER'], cfg['PASSWORD']) do |ftp|
       ftp.passive = true
@@ -330,6 +326,10 @@ def main
         puts "error. exists? whatever..."
       end
     end
+    print "*** Setting up initial state: "
+    exit 1 unless system "sitecopy -r #{$tempDir}/rc -p #{$tempDir}/state -i darcspublish"
+    exit 1 unless system "sitecopy -r #{$tempDir}/rc -p #{$tempDir}/state -f darcspublish"
+    puts "ok"
   else
     puts "*** Found state file."
   end
