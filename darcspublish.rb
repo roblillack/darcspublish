@@ -34,6 +34,8 @@ def find_mtime(type, directory, filename)
 		return File.stat(File.join(directory, filename)).mtime
 	when 'darcs'
 		return Time.parse(`darcs changes --repodir "#{directory}" "#{filename[1..-1]}"`.split("\n")[2])
+        when 'git'
+		return Time.at(`git log --format=format:%ct -n1`.to_i)
 	else
 		raise "find_mtime not supported for repo type #{type}"
 	end
@@ -171,7 +173,7 @@ def main
     exit 1 unless system "cd #{$tempDir}/repocopy && rm -rf .git/logs .git/index && git update-server-info >/dev/null && cd #{Dir.pwd}"
     cfg['SOURCEDIR'] = $tempDir + '/repocopy'
     if cfg['UPLOAD'] == 'CONTENT' then
-      cfg['EXCLUDE'] += ' .git'
+      cfg['EXCLUDE'] += ' /.git'
     #elsif cfg['UPLOAD'] == 'REPO' then
     #  cfg['SOURCEDIR'] = $tempDir + '/repocopy/.git'
     end
