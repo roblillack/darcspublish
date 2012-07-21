@@ -217,7 +217,7 @@ def main
       next if excluded
 
       if File.directory? f then
-        FileUtils.mkdir($tempDir + '/repoclone' + name, :mode => File.lstat(f).mode)
+        FileUtils.mkdir_p($tempDir + '/repoclone' + name, :mode => File.lstat(f).mode)
       else
         if File.symlink? f then
           File.symlink(File.readlink(f), $tempDir + '/repoclone' + name)
