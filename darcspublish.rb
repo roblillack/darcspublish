@@ -209,7 +209,7 @@ def main
       
 	  excluded = false
 	  cfg['EXCLUDE'].strip.split(/\s+/).each do |i|
-	  	next unless (i[0,1] == '/' and File.fnmatch?(i, name)) or
+	  	next unless (i[0,1] == '/' and (File.fnmatch?(i, name) or name[0, i.length+1] == i + "/")) or
 	  	            File.fnmatch?(i, File.basename(name))
 	  	excluded = true
 	  	break
